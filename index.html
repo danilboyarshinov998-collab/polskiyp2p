@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POLSKI P2P & EXCHANGE</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            background-color: #070b13;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow-x: hidden;
+        }
+        #cyberCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+        .app-container {
+            position: relative;
+            z-index: 2;
+            max-width: 480px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 16px;
+            padding-bottom: 95px;
+        }
+        /* Экраны */
+        .screen {
+            display: none;
+        }
+        .screen.active {
+            display: block;
+        }
+        /* Header */
+        .header {
+            background: #0d1322;
+            border: 1px solid #1e294b;
+            border-radius: 12px;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header-icon {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            animation: pulseIcon 2s infinite ease-in-out;
+        }
+        @keyframes pulseIcon {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 2px rgba(59,130,246,0.6)); }
+            50% { transform: scale(1.08); filter: drop-shadow(0 0 8px rgba(139,92,246,0.9)); }
+        }
+        .header-title {
+            font-weight: 800;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+        }
+        .header-status {
+            font-size: 11px;
+            color: #10b981;
+            margin-top: 2px;
+        }
+        .secure-badge {
+            background: #111c30;
+            border: 1px solid #2563eb;
+            color: #60a5fa;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 6px;
+            letter-spacing: 0.5px;
+        }
+        /* Card */
+        .card {
+            background: rgba(13, 19, 34, 0.95);
+            border: 1px solid #1e294b;
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+        .section-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #94a3b8;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .crypto-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+        .crypto-btn {
+            background: #111c30;
+            border: 1px solid #223254;
+            color: #94a3b8;
+            padding: 10px 0;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+            outline: none;
+        }
+        .crypto-btn:hover {
+            border-color: #3b82f6;
+            color: #fff;
+        }
+        .crypto-btn.active {
+            background: #1e3a8a;
+            border-color: #3b82f6;
+            color: #fff;
+        }
+        .input-box {
+            background: #060913;
+            border: 1px solid #1e294b;
+            border-radius: 10px;
+            padding: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .input-box input {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 20px;
+            font-weight: 700;
+            width: 70%;
+            outline: none;
+        }
+        .input-badge {
+            background: #111c30;
+            color: #94a3b8;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .select-box {
+            background: #111c30;
+            border: 1px solid #223254;
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        .rate-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #94a3b8;
+            margin-bottom: 16px;
+            padding: 0 4px;
+        }
+        .rate-info span:last-child {
+            color: #34d399;
+            font-weight: 600;
+        }
+        .calc-btn {
+            width: 100%;
+            background: linear-gradient(90deg, #2563eb, #7c3aed);
+            border: none;
+            border-radius: 10px;
+            padding: 14px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+            transition: all 0.2s;
+        }
+        .calc-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        .result-box {
+            background: #060913;
+            border: 1px solid #1e294b;
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        .result-title {
+            font-size: 10px;
+            color: #94a3b8;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        .result-value {
+            font-size: 20px;
+            font-weight: 800;
+            color: #34d399;
+        }
+        .instructions {
+            font-size: 11px;
+            color: #94a3b8;
+            line-height: 1.4;
+            margin-bottom: 16px;
+            background: #060913;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px dashed #1e294b;
+        }
+        .guarantor-btn {
+            width: 100%;
+            background: #10b981;
+            border: none;
+            border-radius: 10px;
+            padding: 14px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+            transition: all 0.2s;
+        }
+        .guarantor-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        
+        /* Стили для Рефки */
+        .ref-box {
+            background: #060913;
+            border: 1px solid #1e294b;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .ref-link {
+            font-size: 11px;
+            color: #60a5fa;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-right: 8px;
+        }
+        .copy-btn {
+            background: #111c30;
+            border: 1px solid #223254;
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .ref-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #94a3b8;
+            margin-bottom: 16px;
+            padding: 0 4px;
+        }
+        .ref-stats span:last-child {
+            color: #fff;
+            font-weight: 700;
+        }
+        .withdraw-btn {
+            width: 100%;
+            background: #10b981;
+            border: none;
+            border-radius: 10px;
+            padding: 14px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        /* Стили для ТГК (кликабельная карточка) */
+        .tgk-card {
+            background: #111218;
+            border: 1px solid #2b2318;
+            border-radius: 16px;
+            padding: 24px 20px;
+            text-align: center;
+            cursor: pointer;
+            text-decoration: none;
+            display: block;
+            transition: all 0.2s;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+        .tgk-card:hover {
+            border-color: #fbbf24;
+            transform: translateY(-2px);
+        }
+        .tgk-title {
+            color: #fbbf24;
+            font-size: 15px;
+            font-weight: 700;
+            margin: 12px 0 6px 0;
+        }
+        .tgk-desc {
+            color: #94a3b8;
+            font-size: 12px;
+            line-height: 1.4;
+            margin-bottom: 16px;
+        }
+        .tgk-link-btn {
+            background: linear-gradient(90deg, #2563eb, #7c3aed);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 12px;
+            font-weight: 700;
+            font-size: 13px;
+            display: inline-block;
+            width: 100%;
+        }
+
+        /* Стили для Правил */
+        .rules-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .rule-item {
+            background: #060913;
+            border: 1px solid #1e294b;
+            border-radius: 10px;
+            padding: 12px;
+        }
+        .rule-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #fbbf24;
+            margin-bottom: 4px;
+        }
+        .rule-text {
+            font-size: 11px;
+            color: #94a3b8;
+            line-height: 1.4;
+        }
+        .rule-text.red {
+            color: #f87171;
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #0a0f1d;
+            border-top: 1px solid #1e294b;
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 12px;
+            z-index: 10;
+        }
+        .nav-item {
+            color: #64748b;
+            font-size: 11px;
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 10px;
+            flex: 1;
+            padding: 8px 0;
+            margin: 0 3px;
+            outline: none;
+            transition: all 0.2s;
+        }
+        .nav-item.active {
+            color: #38bdf8;
+            background: #0d1322;
+            border-color: #1e294b;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="cyberCanvas"></canvas>
+    <div class="app-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <div class="header-icon">⚡</div>
+                <div>
+                    <div class="header-title">POLSKI TEAM</div>
+                    <div class="header-status">• СИСТЕМА ОНЛАЙН 24/7</div>
+                </div>
+            </div>
+            <div class="secure-badge">SECURE P2P</div>
+        </div>
+
+        <!-- ЭКРАН 1: ОБМЕН -->
+        <div id="screen-exchange" class="screen active">
+            <div class="card">
+                <div class="section-label">
+                    <span>ОТДАЕТЕ (МОНЕТА)</span>
+                    <span id="minLimit">МИН: 1 USDT</span>
+                </div>
+                <div class="crypto-grid">
+                    <button type="button" class="crypto-btn active" onclick="selectCrypto('USDT', 95.00, 1, this)">USDT</button>
+                    <button type="button" class="crypto-btn" onclick="selectCrypto('BTC', 5800000, 0.0001, this)">BTC</button>
+                    <button type="button" class="crypto-btn" onclick="selectCrypto('TON', 550, 1, this)">TON</button>
+                    <button type="button" class="crypto-btn" onclick="selectCrypto('RUB', 1/95.00, 100, this)">RUB</button>
+                </div>
+                <div class="section-label" id="sendLabel">СУММА К ОТПРАВКЕ</div>
+                <div class="input-box">
+                    <input type="number" id="amountInput" value="1" min="1" oninput="calculateDeal()">
+                    <div class="input-badge" id="currencyLabel">USDT</div>
+                </div>
+                <div class="section-label" id="receiveLabel">ПОЛУЧАЕТЕ</div>
+                <div class="select-box" id="receiveBox">
+                    RUB (Карта / СБП / Сбер / Тинькофф)
+                </div>
+                <div class="rate-info">
+                    <span>Курс обмена:</span>
+                    <span id="rateText">1 USDT = 95.00 RUB</span>
+                </div>
+                <div class="rate-info" style="margin-top: -10px; margin-bottom: 16px;">
+                    <span>Комиссия сервиса:</span>
+                    <span style="color: #60a5fa;">0% (Акция)</span>
+                </div>
+                <button type="button" class="calc-btn" onclick="calculateDeal()">РАССЧИТАТЬ СДЕЛКУ</button>
+                <div class="result-box">
+                    <div class="result-title" id="resultTitle">ИТОГО К ВЫПЛАТЕ:</div>
+                    <div class="result-value" id="resultValue">95,00 RUB</div>
+                </div>
+                <div class="instructions">
+                    <b>📖 Порядок сделки:</b> 1. Нажмите связь с гарантом. 2. Отправьте чек. 3. Получите выплату за 1-3 мин!
+                </div>
+                <a href="https://t.me/BSGPOLAND" target="_blank" class="guarantor-btn">
+                    💬 СВЯЗАТЬСЯ С ГАРАНТОМ (@BSGPOLAND)
+                </a>
+            </div>
+        </div>
+
+        <!-- ЭКРАН 2: РЕФКА -->
+        <div id="screen-ref" class="screen">
+            <div class="card">
+                <div class="section-label" style="justify-content: center; margin-bottom: 12px; font-size: 12px;">
+                    👥 Партнерская программа
+                </div>
+                <div style="text-align: center; font-size: 11px; color: #94a3b8; margin-bottom: 12px;">
+                    Получайте <b>0.50$</b> за каждого реферала, который совершит обмен!
+                </div>
+                <div class="section-label">Ваша реферальная ссылка:</div>
+                <div class="ref-box">
+                    <div class="ref-link" id="refLinkText">https://t.me/BsgPoland_bot?start=ref_polski</div>
+                    <button type="button" class="copy-btn" onclick="copyRef()">Копировать</button>
+                </div>
+                <div class="ref-stats">
+                    <span>Приглашено рефералов:</span>
+                    <span>0 чел.</span>
+                </div>
+                <div class="ref-stats" style="margin-bottom: 16px;">
+                    <span>Доступно к выводу:</span>
+                    <span style="color: #34d399;">0.00 $</span>
+                </div>
+                <button type="button" class="withdraw-btn">💰 ЗАПРОСИТЬ ВЫВОД ($1.00 МИН)</button>
+            </div>
+        </div>
+
+        <!-- ЭКРАН 3: ТГК -->
+        <div id="screen-tgk" class="screen">
+            <a href="https://t.me/+PZf8MfY7VptkYTBi" target="_blank" class="tgk-card">
+                <div style="font-size: 28px;">📢</div>
+                <div class="tgk-title">POLSKI TEAM | Официальный ТГК</div>
+                <div class="tgk-desc">Переходите в наш Telegram-канал, следите за новостями, отзывами и актуальными курсами!</div>
+                <div class="tgk-link-btn">ПЕРЕЙТИ В КАНАЛ 🚀</div>
+            </a>
+        </div>
+
+        <!-- ЭКРАН 4: ПРАВИЛА -->
+        <div id="screen-rules" class="screen">
+            <div class="card">
+                <div class="section-label" style="justify-content: center; margin-bottom: 12px; font-size: 12px; color: #fbbf24;">
+                    ⚠️ ЖЕСТКИЙ УСТАВ & FAQ
+                </div>
+                <div class="rules-container">
+                    <div class="rule-item">
+                        <div class="rule-text red">
+                            🚨 ВНИМАНИЕ (Казино, БК и грязный кэш): Если вы заводите средства с онлайн-казино, букмекерских контор (БК) или сомнительных площадок — <b>уведомляйте гаранта ДО сделки</b>. Попытка скинуть транзитный грязный мусор без предупреждения = блокировка средств до выяснения обстоятельств. Чистота каналов — наш приоритет.
+                        </div>
+                    </div>
+                    <div class="rule-item">
+                        <div class="rule-title">❓ Как фиксируется курс обмена?</div>
+                        <div class="rule-text">Курс фиксируется <b>строго в момент создания заявки</b> и подтверждения гарантом. Если рынок полетел вверх или вниз пока вы идете до терминала/банка — пересчет идет по актуальному курсу. Не затягивайте с переводами.</div>
+                    </div>
+                    <div class="rule-item">
+                        <div class="rule-title">❓ Откуда берутся задержки выплаты?</div>
+                        <div class="rule-text">В 99% случаев выплата занимает 1-3 минуты. Задержки возможны только со стороны банков (технические профилактики шлюзов, зависание СБП). Гарант отправляет деньги мгновенно после подтверждения чека.</div>
+                    </div>
+                    <div class="rule-item">
+                        <div class="rule-title">❓ Что если я ошибусь реквизитами?</div>
+                        <div class="rule-text">Ответственность за указанные реквизиты лежит полностью на вас. Проверяйте номер карты и ФИО перед отправкой. Средства, ушедшие на ошибочные реквизиты третьих лиц, не возвращаются.</div>
+                    </div>
+                    <div class="rule-item">
+                        <div class="rule-title">❓ Где гарантия, что меня не кинут?</div>
+                        <div class="rule-text">Все сделки проводятся <b>исключительно через официальный контакт @BsgPoland</b>. Никаких ботов-одиночек, левых менеджеров и «помощников». Проверяйте юзернейм перед каждым переводом!</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <button type="button" class="nav-item active" onclick="switchScreen('screen-exchange', this)">⚡ Обмен</button>
+        <button type="button" class="nav-item" onclick="switchScreen('screen-ref', this)">👤 Рефка</button>
+        <button type="button" class="nav-item" onclick="switchScreen('screen-tgk', this)">◀ ТГК</button>
+        <button type="button" class="nav-item" onclick="switchScreen('screen-rules', this)">📋 Правила</button>
+        <button type="button" class="nav-item" onclick="window.open('https://t.me/+eX3lPtaGdzE3MWVi', '_blank')">🚀 Ворк</button>
+    </div>
+
+    <script>
+        let currentRate = 95.00;
+        let currentCrypto = 'USDT';
+
+        function selectCrypto(crypto, rate, minVal, element) {
+            currentCrypto = crypto;
+            currentRate = rate;
+
+            document.querySelectorAll('.crypto-grid .crypto-btn').forEach(btn => btn.classList.remove('active'));
+            element.classList.add('active');
+
+            document.getElementById('currencyLabel').innerText = crypto;
+            document.getElementById('minLimit').innerText = `МИН: ${minVal} ${crypto}`;
+            document.getElementById('amountInput').value = minVal;
+            document.getElementById('amountInput').min = minVal;
+            
+            if (crypto === 'RUB') {
+                document.getElementById('rateText').innerText = `1 RUB = ${(1/95).toFixed(4)} USDT`;
+                document.getElementById('receiveBox').innerText = 'USDT (Кошелек / Binance / Bybit)';
+                document.getElementById('resultTitle').innerText = 'ИТОГО К ПОЛУЧЕНИЮ:';
+            } else {
+                document.getElementById('rateText').innerText = `1 ${crypto} = ${rate.toLocaleString('ru-RU')} RUB`;
+                document.getElementById('receiveBox').innerText = 'RUB (Карта / СБП / Сбер / Тинькофф)';
+                document.getElementById('resultTitle').innerText = 'ИТОГО К ВЫПЛАТЕ:';
+            }
+
+            calculateDeal();
+        }
+
+        function calculateDeal() {
+            const amount = parseFloat(document.getElementById('amountInput').value) || 0;
+            let total = 0;
+            let targetCurrency = 'RUB';
+
+            if (currentCrypto === 'RUB') {
+                total = amount / 95.00;
+                targetCurrency = 'USDT';
+            } else {
+                total = amount * currentRate;
+                targetCurrency = 'RUB';
+            }
+
+            document.getElementById('resultValue').innerText = total.toLocaleString('ru-RU', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' ' + targetCurrency;
+        }
+
+        function switchScreen(screenId, btn) {
+            document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
+            document.querySelectorAll('.bottom-nav .nav-item').forEach(item => item.classList.remove('active'));
+
+            document.getElementById(screenId).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        function copyRef() {
+            const text = document.getElementById('refLinkText').innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Реферальная ссылка скопирована!');
+            });
+        }
+
+        // Анимация сетки/частиц на фоне (киберпанк)
+        const canvas = document.getElementById('cyberCanvas');
+        const ctx = canvas.getContext('2d');
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        const particles = [];
+        for (let i = 0; i < 25; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                vx: (Math.random() - 0.5) * 0.4,
+                vy: (Math.random() - 0.5) * 0.4
+            });
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'rgba(56, 189, 248, 0.15)';
+            ctx.strokeStyle = 'rgba(30, 41, 75, 0.4)';
+            
+            particles.forEach((p, index) => {
+                p.x += p.vx;
+                p.y += p.vy;
+                if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2);
+                ctx.fill();
+
+                for (let j = index + 1; j < particles.length; j++) {
+                    const p2 = particles[j];
+                    const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+                    if (dist < 120) {
+                        ctx.beginPath();
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.stroke();
+                    }
+                }
+            });
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>
